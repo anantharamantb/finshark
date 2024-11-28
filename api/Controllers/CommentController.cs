@@ -22,7 +22,7 @@ namespace api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult> GetAllAsync()
+        public async Task<IActionResult> GetAllAsync()
         {
             var comments = await _commentRepo.GetAllAsync();
             var commentsDto = comments.Select(c => c.ToCommentDto());
@@ -30,7 +30,7 @@ namespace api.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult> GetByIdAsync([FromRoute] int id)
+        public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
         {
             var comment = await _commentRepo.GetByIdAsync(id);
             if (comment == null)
@@ -41,7 +41,7 @@ namespace api.Controllers
         }
 
         [HttpPost ("{stockId}")]
-        public async Task<ActionResult> CreateAsync([FromRoute] int stockId, CreateCommentDto createDto)
+        public async Task<IActionResult> CreateAsync([FromRoute] int stockId, CreateCommentDto createDto)
         {
             var stock = await _stockRepo.GetByIdAsync(stockId);
             if (stock == null)
@@ -50,6 +50,29 @@ namespace api.Controllers
             }
             var comment = await _commentRepo.CreateAsync(stockId, createDto);
             return CreatedAtAction(nameof(GetByIdAsync), new {id = comment.Id}, comment.ToCommentDto());
+        }
+
+        [HttpPut]
+        [Route("{id}")]
+        public async Task<IActionResult> UpdateAsync([FromRoute] int id, UpdateCommentDto updateDto)
+        {
+            var comment = await _commentRepo.UpdateAsync(id, updateDto.ToCommentFromUpdateDto());
+            if(comment == null)
+            {
+                return NotFound("Comment not found");
+            }
+            return Ok(comment.ToCommentDto());
+        }
+
+        [HttpDelete ("{id}")]
+        public async Task<IActionResult> Delete ([FromRoute] int id)
+        {
+            var comment = await _commentRepo.DeleteAsync(id);
+            if(comment == null)
+            {
+                return NotFound("Comment not found");
+            }
+            return Ok(comment);
         }
     }
 }
